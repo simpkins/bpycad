@@ -20,23 +20,30 @@ from typing import Callable, Dict, Optional, Union
 ModuleDict = Dict[str, Callable[[], bpy.types.Object]]
 
 
-def export_stl(
-    name: str, out_dir: Path, obj_fn: Callable[[], bpy.types.Object]
+def main(
+    models: ModuleDict,
+    out_dir: Union[str, Path, None] = None,
+    dflt_out_dir_name: str = "stl_out",
 ) -> None:
-    print(f"Exporting {name}...")
-    blender_util.delete_all()
-    obj = obj_fn()
-
-    out_path = out_dir / f"{name}.stl"
-    bpy.ops.export_mesh.stl(filepath=str(out_path))
-
-
-def main(models: ModuleDict, out_dir: Union[str, Path, None] = None) -> None:
     """A main function to use for exporting STL files from CAD models.
 
     To use, invoke it through blender:
 
-        blender -P dev.py -b -- [SCRIPT_ARGUMENTS]
+        blender -P your_export_script.py -b -- [SCRIPT_ARGUMENTS]
+
+    Arguments:
+    - models:
+      A dictionary of all model functions.  The command line arguments control
+      whether all models will be exported or just some selection of them.
+    - out_dir:
+      The output directory to use.  May be overridden by the command-line
+      --output-dir flag.  If not specified, defaults to SCRIPT_DIR/stl_out,
+      where SCRIPT_DIR is the directory containing the top-level script that
+      invoked this function.
+    - dflt_out_dir_name
+      If neither the out_dir argument nor the --output-dir command line
+      argument is specified, dflt_out_dir_name is the name to append to the
+      script directory to compute the output directory path.
     """
     dflt_out_dir: Optional[Path] = None
     if out_dir is not None:
@@ -62,7 +69,7 @@ def main(models: ModuleDict, out_dir: Union[str, Path, None] = None) -> None:
             ap.error(
                 "no --output-dir specified and unable to determine script path"
             )
-        out_dir = Path(main_path).parent / "_out"
+        out_dir = Path(main_path).parent / dflt_out_dir_name
     else:
         out_dir = Path(args.output_dir)
 
@@ -81,3 +88,14 @@ def main(models: ModuleDict, out_dir: Union[str, Path, None] = None) -> None:
         export_stl(name, out_dir, models[name])
 
     sys.exit(0)
+
+
+def export_stl(
+    name: str, out_dir: Path, obj_fn: Callable[[], bpy.types.Object]
+) -> None:
+    print(f"Exporting {name}...")
+    blender_util.delete_all()
+    obj = obj_fn()
+
+    out_path = out_dir / f"{name}.stl"
+    bpy.ops.export_mesh.stl(filepath=str(out_path))
