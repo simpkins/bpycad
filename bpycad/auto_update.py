@@ -114,6 +114,7 @@ class MonitorOperatorBase(bpy.types.Operator):
                 if mod_name == pkg or mod_name.startswith(pkg + "."):
                     monitored_modules.append(mod_name)
                     monitored_paths.append(Path(mod_path))
+                    break
 
         return monitored_modules, monitored_paths
 
@@ -150,7 +151,6 @@ class MonitorOperatorBase(bpy.types.Operator):
         # depend on them.
         importlib.invalidate_caches()
         for mod_name in self._monitored_modules:
-            print(f"forget module {mod_name}")
             sys.modules.pop(mod_name, None)
 
     def _get_timestamps(self) -> Dict[Path, Optional[float]]:
