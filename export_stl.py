@@ -21,7 +21,7 @@ from bpycad import export_stl
 
 from examples import box, pcb_holder
 
-models = {
+models: export_stl.ModelDict = {
     "simple_display_holder": pcb_holder.simple_display_holder,
     "custom_box": box.test,
 }

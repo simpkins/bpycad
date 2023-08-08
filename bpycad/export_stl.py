@@ -17,11 +17,11 @@ import sys
 from pathlib import Path
 from typing import Callable, Dict, Optional, Union
 
-ModuleDict = Dict[str, Callable[[], bpy.types.Object]]
+ModelDict = Dict[str, Callable[[], bpy.types.Object]]
 
 
 def main(
-    models: ModuleDict,
+    models: ModelDict,
     out_dir: Union[str, Path, None] = None,
     dflt_out_dir_name: str = "stl_out",
 ) -> None:

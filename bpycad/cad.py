@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import math
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import Iterable, List, Optional, Tuple, Union
 
 # Blender modules
 import mathutils
@@ -375,7 +375,7 @@ class Mesh:
         self.faces.append((p0.index, p1.index, p2.index, p3.index))
         return index
 
-    def add_fan(self, p0: MeshPoint, points: Sequence[MeshPoint]) -> None:
+    def add_fan(self, p0: MeshPoint, points: Iterable[MeshPoint]) -> None:
         """
         Add a sequence of triangular faces, fanned out from p0 to each of the
         other points.

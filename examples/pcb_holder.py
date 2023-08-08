@@ -32,10 +32,10 @@ class PcbHolder:
         self.h = h
         self.base_thickness = thickness
 
-        self.connector_r = 2.2 * 0.5
+        self.connector_r: float = 2.2 * 0.5
         self.connector_h = 4.75
 
-        self.obj = blender_util.range_cube(
+        self.obj: bpy.types.Object = blender_util.range_cube(
             (0.0, self.w), (0.0, self.h), (0, self.base_thickness)
         )
         self.add_board_connectors()

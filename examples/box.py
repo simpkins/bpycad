@@ -86,11 +86,20 @@ class CustomBox:
             inner_edge = prev_inner_wall_plane.intersect_plane(
                 next_inner_wall_plane
             )
+            if inner_edge is None:
+                # The two walls are parallel.  There generally isn't any need
+                # to define two consecutive parallel walls, but handle this
+                # case anyway.
+                inner_point = self.base_perim[idx].point + (
+                    prev_wall_plane.normal() * self.wall_thickness
+                )
+            else:
+                inner_point = inner_edge[0]
             self.inner_base_perim.append(
-                self.mesh.add_xyz(inner_edge[0].x, inner_edge[0].y, 0.0)
+                self.mesh.add_xyz(inner_point.x, inner_point.y, 0.0)
             )
             self.inner_upper_perim.append(
-                self.mesh.add_xyz(inner_edge[0].x, inner_edge[0].y, inner_h)
+                self.mesh.add_xyz(inner_point.x, inner_point.y, inner_h)
             )
 
             # Mark the outer edges to be beveled
@@ -153,5 +162,5 @@ class CustomBox:
         return obj
 
 
-def test() -> None:
-    CustomBox().gen_obj()
+def test() -> bpy.types.Object:
+    return CustomBox().gen_obj()
