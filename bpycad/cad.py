@@ -375,6 +375,17 @@ class Mesh:
         self.faces.append((p0.index, p1.index, p2.index, p3.index))
         return index
 
+    def add_fan(self, p0: MeshPoint, points: Sequence[MeshPoint]) -> None:
+        """
+        Add a sequence of triangular faces, fanned out from p0 to each of the
+        other points.
+        """
+        prev: Optional[MeshPoint] = None
+        for p in points:
+            if prev is not None:
+                self.add_tri(p0, prev, p)
+            prev = p
+
     def transform(self, tf: Transform) -> None:
         for mp in self.all_points:
             mp.point = mp.point.transform(tf)

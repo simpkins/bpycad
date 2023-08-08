@@ -19,4 +19,4 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from bpycad import dev_main
 
-dev_main.main(["bpcad", "examples"], "examples.dev.main")
+dev_main.main(["bpycad", "examples"], "examples.dev.main")

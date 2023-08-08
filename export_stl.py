@@ -19,6 +19,10 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from bpycad import export_stl
 
-from examples import pcb_holder
+from examples import box, pcb_holder
 
-export_stl.main({"simple_display_holder": pcb_holder.simple_display_holder})
+models = {
+    "simple_display_holder": pcb_holder.simple_display_holder,
+    "custom_box": box.test,
+}
+export_stl.main(models)

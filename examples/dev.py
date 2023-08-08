@@ -3,6 +3,8 @@
 # Copyright (c) 2023, Adam Simpkins
 #
 
+import bpy
+from . import box
 from . import pcb_holder
 
 
@@ -16,4 +18,8 @@ def main() -> None:
     rather it is convenient to have a separate module that we can edit to
     control the real model function we want to invoke.
     """
-    pcb_holder.simple_display_holder()
+    # pcb_holder.simple_display_holder()
+    box.test()
+
+    # Put blender in edit mode after each render
+    bpy.ops.object.mode_set(mode="EDIT")
