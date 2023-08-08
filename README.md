@@ -53,3 +53,14 @@ other mesh clean-up operators.
 
 Neither of these modules currently has a stable API, and they may be refactored
 in the future.
+
+# Examples
+
+The [`example.py`](example.py) script contains an example of how to use this for
+CAD development.  [`export_stl.py`](export_stl.py) contains an example STL
+export script.
+
+My [mantyl](https://github.com/simpkins/mantyl) repository contains some more
+complex real-world examples.
+
+![Example Keyboard Image](img/keyboard_left.png)
