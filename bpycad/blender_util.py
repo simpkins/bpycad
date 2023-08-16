@@ -75,6 +75,7 @@ def boolean_op(
     obj2: bpy.types.Object,
     op: str,
     apply_mod: bool = True,
+    dissolve: bool = False,
 ) -> None:
     """
     Modifies obj1 by performing a boolean operation with obj2.
@@ -111,27 +112,40 @@ def boolean_op(
         # are close to existing vertices.
         bpy.ops.mesh.select_all(action="SELECT")
         bpy.ops.mesh.remove_doubles()
+        if dissolve:
+            bpy.ops.mesh.dissolve_limited()
         bpy.ops.mesh.select_all(action="DESELECT")
 
         bpy.ops.object.mode_set(mode="OBJECT")
 
 
 def difference(
-    obj1: bpy.types.Object, obj2: bpy.types.Object, apply_mod: bool = True
+    obj1: bpy.types.Object,
+    obj2: bpy.types.Object,
+    apply_mod: bool = True,
+    dissolve: bool = False,
 ) -> None:
-    boolean_op(obj1, obj2, "DIFFERENCE", apply_mod=apply_mod)
+    boolean_op(
+        obj1, obj2, "DIFFERENCE", apply_mod=apply_mod, dissolve=dissolve
+    )
 
 
 def union(
-    obj1: bpy.types.Object, obj2: bpy.types.Object, apply_mod: bool = True
+    obj1: bpy.types.Object,
+    obj2: bpy.types.Object,
+    apply_mod: bool = True,
+    dissolve: bool = False,
 ) -> None:
-    boolean_op(obj1, obj2, "UNION", apply_mod=apply_mod)
+    boolean_op(obj1, obj2, "UNION", apply_mod=apply_mod, dissolve=dissolve)
 
 
 def intersect(
-    obj1: bpy.types.Object, obj2: bpy.types.Object, apply_mod: bool = True
+    obj1: bpy.types.Object,
+    obj2: bpy.types.Object,
+    apply_mod: bool = True,
+    dissolve: bool = False,
 ) -> None:
-    boolean_op(obj1, obj2, "INTERSECT", apply_mod=apply_mod)
+    boolean_op(obj1, obj2, "INTERSECT", apply_mod=apply_mod, dissolve=dissolve)
 
 
 def apply_to_wall(
