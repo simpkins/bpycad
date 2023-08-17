@@ -229,8 +229,6 @@ class MonitorOperatorBase(bpy.types.Operator):
             return
 
         self._timestamps = current
-        self._purge_loaded_modules()
-        self._timestamps = current
         self.on_change()
 
     def _purge_loaded_modules(self) -> None:
@@ -276,6 +274,15 @@ class MonitorOperatorBase(bpy.types.Operator):
         print("=" * 60, file=sys.stderr)
         print(f"Running {self._name}...", file=sys.stderr)
         self.report({"INFO"}, f"running {self._name}")
+
+        # Unload all currently loaded modules.
+        # This ensures that any necessary modules will be re-imported when we
+        # run the functions, so they can be discovered by our ImportTracker.
+        # This is also required for correctness: even modules that have not
+        # changed need to be re-imported, since their existing incarnations may
+        # use and refer to other modules that were changed.  They need to be
+        # reloaded to see up-to-date versions of modules that were changed.
+        self._purge_loaded_modules()
 
         error = False
         import_tracker = ImportTracker()
