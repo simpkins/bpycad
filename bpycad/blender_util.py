@@ -75,13 +75,17 @@ def boolean_op(
     obj2: bpy.types.Object,
     op: str,
     apply_mod: bool = True,
-    dissolve: bool = False,
+    dissolve_angle: Optional[float] = None,
 ) -> None:
     """
     Modifies obj1 by performing a boolean operation with obj2.
 
     If apply_mod is True, the modifier is applied and obj2 is deleted before reutrning.
     if apply_mod is False, obj2 cannot be deleted before applying the modifier.
+
+    If dissolve_angle is not None, a dissolve_limited() operator will be
+    applied after the operator, with the specified angle limit.  dissolve_angle
+    should be specified in degrees (rather than radians).
     """
     bpy.ops.object.select_all(action="DESELECT")
     obj1.select_set(True)
@@ -112,8 +116,9 @@ def boolean_op(
         # are close to existing vertices.
         bpy.ops.mesh.select_all(action="SELECT")
         bpy.ops.mesh.remove_doubles()
-        if dissolve:
-            bpy.ops.mesh.dissolve_limited()
+        if dissolve_angle is not None:
+            rad = math.radians(dissolve_angle)
+            bpy.ops.mesh.dissolve_limited(angle_limit=rad)
         bpy.ops.mesh.select_all(action="DESELECT")
 
         bpy.ops.object.mode_set(mode="OBJECT")
@@ -123,10 +128,14 @@ def difference(
     obj1: bpy.types.Object,
     obj2: bpy.types.Object,
     apply_mod: bool = True,
-    dissolve: bool = False,
+    dissolve_angle: Optional[float] = None,
 ) -> None:
     boolean_op(
-        obj1, obj2, "DIFFERENCE", apply_mod=apply_mod, dissolve=dissolve
+        obj1,
+        obj2,
+        "DIFFERENCE",
+        apply_mod=apply_mod,
+        dissolve_angle=dissolve_angle,
     )
 
 
@@ -134,18 +143,26 @@ def union(
     obj1: bpy.types.Object,
     obj2: bpy.types.Object,
     apply_mod: bool = True,
-    dissolve: bool = False,
+    dissolve_angle: Optional[float] = None,
 ) -> None:
-    boolean_op(obj1, obj2, "UNION", apply_mod=apply_mod, dissolve=dissolve)
+    boolean_op(
+        obj1, obj2, "UNION", apply_mod=apply_mod, dissolve_angle=dissolve_angle
+    )
 
 
 def intersect(
     obj1: bpy.types.Object,
     obj2: bpy.types.Object,
     apply_mod: bool = True,
-    dissolve: bool = False,
+    dissolve_angle: Optional[float] = None,
 ) -> None:
-    boolean_op(obj1, obj2, "INTERSECT", apply_mod=apply_mod, dissolve=dissolve)
+    boolean_op(
+        obj1,
+        obj2,
+        "INTERSECT",
+        apply_mod=apply_mod,
+        dissolve_angle=dissolve_angle,
+    )
 
 
 def apply_to_wall(
