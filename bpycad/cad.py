@@ -54,31 +54,37 @@ class Transform:
         return Transform(tl @ self._data)
 
     def rotate(self, x: float, y: float, z: float) -> Transform:
-        x_r = math.radians(x)
-        y_r = math.radians(y)
-        z_r = math.radians(z)
+        return self.rotate_degrees(x, y, z)
+
+    def rotate_degrees(self, x: float, y: float, z: float) -> Transform:
+        xr = math.radians(x)
+        yr = math.radians(y)
+        zr = math.radians(z)
+        return self.rotate_radians(xr, yr, zr)
+
+    def rotate_radians(self, x: float, y: float, z: float) -> Transform:
         rot = mathutils.Matrix(
             (
                 (
-                    math.cos(y_r) * math.cos(z_r),
-                    (math.sin(x_r) * math.sin(y_r) * math.cos(z_r))
-                    - (math.cos(x_r) * math.sin(z_r)),
-                    (math.cos(x_r) * math.sin(y_r) * math.cos(z_r))
-                    + (math.sin(x_r) * math.sin(z_r)),
+                    math.cos(y) * math.cos(z),
+                    (math.sin(x) * math.sin(y) * math.cos(z))
+                    - (math.cos(x) * math.sin(z)),
+                    (math.cos(x) * math.sin(y) * math.cos(z))
+                    + (math.sin(x) * math.sin(z)),
                     0,
                 ),
                 (
-                    math.cos(y_r) * math.sin(z_r),
-                    (math.sin(x_r) * math.sin(y_r) * math.sin(z_r))
-                    + (math.cos(x_r) * math.cos(z_r)),
-                    (math.cos(x_r) * math.sin(y_r) * math.sin(z_r))
-                    - (math.sin(x_r) * math.cos(z_r)),
+                    math.cos(y) * math.sin(z),
+                    (math.sin(x) * math.sin(y) * math.sin(z))
+                    + (math.cos(x) * math.cos(z)),
+                    (math.cos(x) * math.sin(y) * math.sin(z))
+                    - (math.sin(x) * math.cos(z)),
                     0,
                 ),
                 (
-                    -math.sin(y_r),
-                    math.sin(x_r) * math.cos(y_r),
-                    math.cos(x_r) * math.cos(y_r),
+                    -math.sin(y),
+                    math.sin(x) * math.cos(y),
+                    math.cos(x) * math.cos(y),
                     0,
                 ),
                 (0, 0, 0, 1),
@@ -358,12 +364,8 @@ class Plane:
         The Z component of the returned point is always 0.0.
         """
         norm = self.normal()
-        x_angle = math.degrees(
-            math.acos(norm.z / math.sqrt((norm.y ** 2) + (norm.z ** 2)))
-        )
-        y_angle = math.degrees(
-            math.acos(norm.z / math.sqrt((norm.x ** 2) + (norm.z ** 2)))
-        )
+        x_angle = math.acos(norm.z / math.sqrt((norm.y ** 2) + (norm.z ** 2)))
+        y_angle = math.acos(norm.z / math.sqrt((norm.x ** 2) + (norm.z ** 2)))
         return Point(x_angle, y_angle, 0.0)
 
 
@@ -429,29 +431,27 @@ class Line2D:
         fraction = -normal.dot(w) / dot
         return other.p0 + (otherv * fraction)
 
-    def angle_180(self, other: Line2D) -> float:
+    def angle(self, other: Line2D) -> float:
         """Compute the angle between this line and another line.
 
-        Returns the value between 0 and 180 degrees.
+        Returns the value between 0 and pi radians.
         """
         selfv = self.vector()
         otherv = other.vector()
         num = selfv.x * otherv.x + selfv.y * otherv.y
         denom = self.length() * other.length()
-        angle_rad = math.acos(num / denom)
-        return math.degrees(angle_rad)
+        return math.acos(num / denom)
 
-    def angle_360(self, other: Line2D) -> float:
+    def angle_full(self, other: Line2D) -> float:
         """Compute the angle between this line and another line.
 
-        Returns the value between -180 and 180 degrees.
+        Returns the value between -pi and pi radians.
         """
         selfv = self.vector()
         otherv = other.vector()
         dot = selfv.x * otherv.x + selfv.y * otherv.y
         det = selfv.x * otherv.y - selfv.y * otherv.x
-        angle_rad = math.atan2(det, dot)
-        return math.degrees(angle_rad)
+        return math.atan2(det, dot)
 
 
 class MeshPoint:
@@ -546,6 +546,14 @@ class Mesh:
         tf = Transform().rotate(x, y, z)
         self.transform(tf)
 
+    def rotate_degrees(self, x: float, y: float, z: float) -> None:
+        tf = Transform().rotate_degrees(x, y, z)
+        self.transform(tf)
+
+    def rotate_radians(self, x: float, y: float, z: float) -> None:
+        tf = Transform().rotate_radians(x, y, z)
+        self.transform(tf)
+
     def translate(self, x: float, y: float, z: float) -> None:
         tf = Transform().translate(x, y, z)
         self.transform(tf)
@@ -559,12 +567,11 @@ class Mesh:
 def compute_angle(v0: cad.Point, v1: cad.Point) -> float:
     """Compute the angle between two vectors.
 
-    Returns the value in degrees.
+    Returns the value in radians.
     """
     num = v0.x * v1.x + v0.y * v1.y + v0.z * v1.z
     denom = v0.length() * v1.length()
-    rad = math.acos(num / denom)
-    return math.degrees(rad)
+    return math.acos(num / denom)
 
 
 def cube(x: float, y: float, z: float) -> Mesh:
@@ -646,14 +653,14 @@ def cylinder(
     top_points: List[MeshPoint] = []
     bottom_points: List[MeshPoint] = []
 
+    rotation_rads = math.radians(rotation)
     for n in range(end):
-        angle = (rotation / fn) * n
-        rad = math.radians(angle)
+        angle = (rotation_rads / fn) * n
 
-        top_x = math.sin(rad) * r
-        top_y = math.cos(rad) * r
-        bottom_x = math.sin(rad) * r2
-        bottom_y = math.cos(rad) * r2
+        top_x = math.sin(angle) * r
+        top_y = math.cos(angle) * r
+        bottom_x = math.sin(angle) * r2
+        bottom_y = math.cos(angle) * r2
 
         top_points.append(mesh.add_xyz(top_x, top_y, top_z))
         bottom_points.append(mesh.add_xyz(bottom_x, bottom_y, bottom_z))
@@ -699,12 +706,11 @@ def cone(r: float, h: float, fn: int = 24, rotation: float = 360.0) -> Mesh:
     bottom_center = mesh.add_xyz(0.0, 0.0, bottom_z)
     bottom_points: List[MeshPoint] = []
 
+    rotation_rads = math.radians(rotation)
     for n in range(end):
-        angle = (rotation / fn) * n
-        rad = math.radians(angle)
-
-        circle_x = math.sin(rad) * r
-        circle_y = math.cos(rad) * r
+        angle = (rotation_rads / fn) * n
+        circle_x = math.sin(angle) * r
+        circle_y = math.cos(angle) * r
 
         bottom_points.append(mesh.add_xyz(circle_x, circle_y, bottom_z))
 
