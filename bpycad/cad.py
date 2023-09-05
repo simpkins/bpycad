@@ -196,6 +196,70 @@ class Point:
         return (self.x * p.x) + (self.y * p.y) + (self.z * p.z)
 
 
+class Point2D:
+    __slots__ = ["x", "y"]
+    x: float
+    y: float
+
+    def __init__(self, x: float = 0.0, y: float = 0.0) -> None:
+        self.x = x
+        self.y = y
+
+    def __str__(self) -> str:
+        return f"[{self.x}, {self.y}]"
+
+    def __repr__(self) -> str:
+        return f"Point2D({self.x}, {self.y})"
+
+    def as_tuple(self) -> Tuple[float, float]:
+        return (self.x, self.y)
+
+    def copy(self) -> Point2D:
+        return Point2D(self.x, self.y)
+
+    def translate(self, x: float, y: float) -> Point2D:
+        return Point2D(self.x + x, self.y + y)
+
+    def ptranslate(self, point: Point2D) -> Point2D:
+        return Point2D(self.x + point.x, self.y + point.y)
+
+    def unit(self) -> Point2D:
+        """Treating this point as a vector, return a new vector of length 1.0"""
+        factor = 1.0 / self.length()
+        return Point2D(self.x * factor, self.y * factor)
+
+    def length(self) -> float:
+        """Return the distance from this point to the origin."""
+        return math.sqrt((self.x * self.x) + (self.y * self.y))
+
+    def __hash__(self) -> int:
+        return hash(self.as_tuple())
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Point2D):
+            return False
+        return self.x == other.x and self.y == other.y
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __add__(self, other: Point2D) -> Point2D:
+        assert isinstance(other, Point2D), f"other is {type(other)}"
+        return Point2D(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other: Point2D) -> Point2D:
+        assert isinstance(other, Point2D), f"other is {type(other)}"
+        return Point2D(self.x - other.x, self.y - other.y)
+
+    def __mul__(self, n: Union[float, int]) -> Point2D:
+        assert isinstance(n, (float, int))
+        return Point2D(self.x * n, self.y * n)
+
+    def dot(self, p: Point2D) -> float:
+        """Return the dot product"""
+        return (self.x * p.x) + (self.y * p.y)
+
+
 class Plane:
     __slots__ = ["p0", "p1", "p2"]
 
@@ -301,6 +365,93 @@ class Plane:
             math.acos(norm.z / math.sqrt((norm.x ** 2) + (norm.z ** 2)))
         )
         return Point(x_angle, y_angle, 0.0)
+
+
+class Line2D:
+    """A 2 dimensional line."""
+
+    __slots__ = ["p0", "p1"]
+
+    def __init__(self, p0: Point2D, p1: Point2D) -> None:
+        self.p0: Point2D = p0
+        self.p1: Point2D = p1
+
+    def vector(self) -> Point2D:
+        """Return the vector between the origin and end of this line."""
+        return Point2D(self.p1.x - self.p0.x, self.p1.y - self.p0.y)
+
+    def length(self) -> float:
+        return self.vector().length
+
+    def normal(self) -> Point2D:
+        """Compute the normal vector of this line."""
+        v = self.vector()
+        return Point2D(v.y, -v.x).unit()
+
+    def shifted_along_normal(self, offset: float) -> Line2D:
+        """Return a new line that is parallel to this line,
+        but shifted along the normal by the specified amount.
+        """
+        v = self.normal() * offset
+        return Line2D(self.p0 + v, self.p1 + v)
+
+    def as_slope_intercept(self) -> Tuple[float, float]:
+        """Return the slope and intercept of this line,
+        if written as a linear equation.
+
+        Returns the values a and b from the equation y = a*x + b
+        """
+        if self.p1.x == self.p0.x:
+            # This line is completely vertical
+            raise Exception(
+                "line is vertical, and cannot be written as a linear equation."
+            )
+
+        slope = (self.p1.y - self.p0.y) / (self.p1.x - self.p0.x)
+        intercept = self.p0.y - slope * self.p0.x
+        return (slope, intercept)
+
+    def intersect(self, other: Line2D) -> Point2D:
+        """Return the point where this line intersects with the specified
+        line.
+        """
+        # Compute this line's normal vector
+        v = self.vector()
+        normal = Point2D(v.y, -v.x)
+
+        otherv = other.vector()
+        dot = normal.dot(otherv)
+        if dot == 0.0:
+            # These lines are parallel
+            return None
+
+        w = other.p0 - self.p0
+        fraction = -normal.dot(w) / dot
+        return other.p0 + (otherv * fraction)
+
+    def angle_180(self, other: Line2D) -> float:
+        """Compute the angle between this line and another line.
+
+        Returns the value between 0 and 180 degrees.
+        """
+        selfv = self.vector()
+        otherv = other.vector()
+        num = selfv.x * otherv.x + selfv.y * otherv.y
+        denom = self.length() * other.length()
+        angle_rad = math.acos(num / denom)
+        return math.degrees(angle_rad)
+
+    def angle_360(self, other: Line2D) -> float:
+        """Compute the angle between this line and another line.
+
+        Returns the value between -180 and 180 degrees.
+        """
+        selfv = self.vector()
+        otherv = other.vector()
+        dot = selfv.x * otherv.x + selfv.y * otherv.y
+        det = selfv.x * otherv.y - selfv.y * otherv.x
+        angle_rad = math.atan2(det, dot)
+        return math.degrees(angle_rad)
 
 
 class MeshPoint:
