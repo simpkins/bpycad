@@ -70,6 +70,20 @@ def new_mesh_obj(
     return obj
 
 
+def dissolve_limited(obj: bpy.types.Object, angle: float) -> None:
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+
+    rad = math.radians(dissolve_angle)
+    bpy.ops.mesh.dissolve_limited(angle_limit=rad)
+
+    bpy.ops.mesh.select_all(action="DESELECT")
+    bpy.ops.object.mode_set(mode="OBJECT")
+
+
 def boolean_op(
     obj1: bpy.types.Object,
     obj2: bpy.types.Object,
