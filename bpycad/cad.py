@@ -378,6 +378,12 @@ class Line2D:
         self.p0: Point2D = p0
         self.p1: Point2D = p1
 
+    def __str__(self) -> str:
+        return f"[{self.p0} -> {self.p1}]"
+
+    def __repr__(self) -> str:
+        return f"Line2D({self.p0:!r}, {self.p1!r})"
+
     def vector(self) -> Point2D:
         """Return the vector between the origin and end of this line."""
         return Point2D(self.p1.x - self.p0.x, self.p1.y - self.p0.y)
