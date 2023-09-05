@@ -57,10 +57,25 @@ def main(
         "-o",
         "--output-dir",
         metavar="DIR",
-        help="The output directory",
+        help="The output directory.",
         default=dflt_out_dir,
     )
+    ap.add_argument(
+        "-l",
+        "--list",
+        action="store_true",
+        help="List the available models and then exit.",
+    )
     args = ap.parse_args(blender_util.get_script_args())
+
+    if args.list:
+        # Blender prints a couple of its own start-up messages to stdout,
+        # so print a header line to help distinguish our model name output
+        # from other messages already printed by blender.
+        print("\n= Model Names =\n")
+        for name in sorted(models.keys()):
+            print(f"{name}")
+        sys.exit(0)
 
     if args.output_dir is None:
         main_module = sys.modules.get("__main__", None)
