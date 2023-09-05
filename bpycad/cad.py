@@ -159,11 +159,14 @@ class Point:
 
     def unit(self) -> Point:
         """Treating this point as a vector, return a new vector of length 1.0"""
-        length = math.sqrt(
+        factor = 1.0 / self.length()
+        return Point(self.x * factor, self.y * factor, self.z * factor)
+
+    def length(self) -> float:
+        """Return the distance from this point to the origin."""
+        return math.sqrt(
             (self.x * self.x) + (self.y * self.y) + (self.z * self.z)
         )
-        factor = 1.0 / length
-        return Point(self.x * factor, self.y * factor, self.z * factor)
 
     def __hash__(self) -> int:
         return hash(self.as_tuple())
@@ -177,13 +180,11 @@ class Point:
         return not self.__eq__(other)
 
     def __add__(self, other: Point) -> Point:
-        assert isinstance(other, Point)
+        assert isinstance(other, Point), f"other is {type(other)}"
         return Point(self.x + other.x, self.y + other.y, self.z + other.z)
 
     def __sub__(self, other: Point) -> Point:
-        if not isinstance(other, Point):
-            raise Exception(f"other is {type(other)}")
-
+        assert isinstance(other, Point), f"other is {type(other)}"
         return Point(self.x - other.x, self.y - other.y, self.z - other.z)
 
     def __mul__(self, n: Union[float, int]) -> Point:
@@ -402,6 +403,17 @@ class Mesh:
         for mp in self.all_points:
             mp.point.x = -1.0 * mp.x
         self.faces = [tuple(reversed(face)) for face in self.faces]
+
+
+def compute_angle(v0: cad.Point, v1: cad.Point) -> float:
+    """Compute the angle between two vectors.
+
+    Returns the value in degrees.
+    """
+    num = v0.x * v1.x + v0.y * v1.y + v0.z * v1.z
+    denom = v0.length() * v1.length()
+    rad = math.acos(num / denom)
+    return math.degrees(rad)
 
 
 def cube(x: float, y: float, z: float) -> Mesh:
