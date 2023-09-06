@@ -179,6 +179,33 @@ def intersect(
     )
 
 
+def apply_to_wall_transform(
+    left: cad.Point,
+    right: cad.Point,
+    x: float = 0.0,
+    z: float = 0.0,
+) -> None:
+    wall_len = math.sqrt(((right.y - left.y) ** 2) + ((right.x - left.x) ** 2))
+    angle = math.atan2(right.y - left.y, right.x - left.x)
+
+    tf = cad.Transform()
+
+    # Move the object along the x axis so it ends up centered on the wall.
+    # This assumes the object starts centered around the origin.
+    #
+    # Also apply any extra X and Z translation supplied by the caller.
+    tf = tf.translate(x + wall_len * 0.5, 0.0, z)
+
+    # Next rotate the object so it is at the same angle to the x axis
+    # as the wall.
+    tf = tf.rotate_radians(0.0, 0.0, angle)
+
+    # Finally move the object from the origin so it is at the wall location
+    tf = tf.translate(left.x, left.y, 0.0)
+
+    return tf
+
+
 def apply_to_wall(
     obj: bpy.types.Object,
     left: cad.Point,
@@ -193,22 +220,9 @@ def apply_to_wall(
     on the wall), and it should be centered on the X axis in order to end up
     centered on the wall.
     """
-    wall_len = math.sqrt(((right.y - left.y) ** 2) + ((right.x - left.x) ** 2))
-    angle = math.atan2(right.y - left.y, right.x - left.x)
-
+    tf = apply_to_wall_transform(left, right, x, z)
     with TransformContext(obj) as ctx:
-        # Move the object along the x axis so it ends up centered on the wall.
-        # This assumes the object starts centered around the origin.
-        #
-        # Also apply any extra X and Z translation supplied by the caller.
-        ctx.translate(x + wall_len * 0.5, 0.0, z)
-
-        # Next rotate the object so it is at the same angle to the x axis
-        # as the wall.
-        ctx.rotate(math.degrees(angle), "Z")
-
-        # Finally move the object from the origin so it is at the wall location
-        ctx.translate(left.x, left.y, 0.0)
+        ctx.transform(tf)
 
 
 class TransformContext:
