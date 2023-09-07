@@ -229,8 +229,8 @@ def apply_to_wall(
 class TransformContext:
     def __init__(self, obj: bpy.types.Object) -> None:
         self.obj = obj
-        # pyre-fixme: 20
-        self.bmesh = bmesh.new()
+        # pyre-fixme[20]: blender type stubs are inaccurate
+        self.bmesh: bmesh.types.BMesh = bmesh.new()
         self.bmesh.from_mesh(obj.data)
 
     def __enter__(self) -> TransformContext:
@@ -277,10 +277,11 @@ class TransformContext:
         bmesh.ops.transform(self.bmesh, verts=self.bmesh.verts, matrix=matrix)
 
     def triangulate(self) -> None:
-        # pyre-fixme[20]
+        # pyre-fixme[16, 20]: blender type stubs are inaccurate
         bmesh.ops.triangulate(self.bmesh, faces=self.bmesh.faces[:])
 
     def mirror_x(self) -> None:
+        # pyre-fixme[16]: blender type stubs are inaccurate
         geom = self.bmesh.faces[:] + self.bmesh.verts[:] + self.bmesh.edges[:]
         # Mirror creates new mirrored geometry
         # Set merge_dist to a negative value to prevent any of the new mirrored
