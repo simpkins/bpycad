@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import math
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import Iterable, List, Optional, Sequence, Tuple, Union
 
 # Blender modules
 import mathutils
@@ -505,9 +505,7 @@ class Mesh:
     def __init__(self) -> None:
         self.points: List[MeshPoint] = []
         self.all_points: List[MeshPoint] = []
-        self.faces: List[
-            Union[Tuple[int, int, int], Tuple[int, int, int, int]]
-        ] = []
+        self.faces: List[Sequence[int]] = []
 
     def add_point(self, point: Union[Point, MeshPoint]) -> MeshPoint:
         if isinstance(point, MeshPoint):
@@ -533,6 +531,13 @@ class Mesh:
     ) -> int:
         index = len(self.faces)
         self.faces.append((p0.index, p1.index, p2.index, p3.index))
+        return index
+
+    def add_face(self, points: Iterable[MeshPoint]) -> int:
+        """Add a face with an arbitrary number of vertices.
+        """
+        index = len(self.faces)
+        self.faces.append([p.index for p in points])
         return index
 
     def add_fan(self, p0: MeshPoint, points: Iterable[MeshPoint]) -> None:
