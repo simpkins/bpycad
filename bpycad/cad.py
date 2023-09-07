@@ -389,7 +389,7 @@ class Line2D:
         return Point2D(self.p1.x - self.p0.x, self.p1.y - self.p0.y)
 
     def length(self) -> float:
-        return self.vector().length
+        return self.vector().length()
 
     def normal(self) -> Point2D:
         """Compute the normal vector of this line."""
@@ -419,9 +419,11 @@ class Line2D:
         intercept = self.p0.y - slope * self.p0.x
         return (slope, intercept)
 
-    def intersect(self, other: Line2D) -> Point2D:
+    def intersect(self, other: Line2D) -> Optional[Point2D]:
         """Return the point where this line intersects with the specified
         line.
+
+        Returns None if the two lines are parallel to each other.
         """
         # Compute this line's normal vector
         v = self.vector()
@@ -570,7 +572,7 @@ class Mesh:
         self.faces = [tuple(reversed(face)) for face in self.faces]
 
 
-def compute_angle(v0: cad.Point, v1: cad.Point) -> float:
+def compute_angle(v0: Point, v1: Point) -> float:
     """Compute the angle between two vectors.
 
     Returns the value in radians.

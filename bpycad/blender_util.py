@@ -73,11 +73,12 @@ def new_mesh_obj(
 def dissolve_limited(obj: bpy.types.Object, angle: float) -> None:
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
+    # pyre-fixme[16]: blender type stubs are inaccurate here
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.mode_set(mode="EDIT")
     bpy.ops.mesh.select_all(action="SELECT")
 
-    rad = math.radians(dissolve_angle)
+    rad = math.radians(angle)
     bpy.ops.mesh.dissolve_limited(angle_limit=rad)
 
     bpy.ops.mesh.select_all(action="DESELECT")
@@ -184,7 +185,7 @@ def apply_to_wall_transform(
     right: cad.Point,
     x: float = 0.0,
     z: float = 0.0,
-) -> None:
+) -> cad.Transform:
     wall_len = math.sqrt(((right.y - left.y) ** 2) + ((right.x - left.x) ** 2))
     angle = math.atan2(right.y - left.y, right.x - left.x)
 
