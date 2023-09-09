@@ -18,6 +18,7 @@ from __future__ import annotations
 import bpy
 import importlib
 import sys
+import time
 import traceback
 from importlib.abc import MetaPathFinder
 from importlib.machinery import ModuleSpec
@@ -288,8 +289,11 @@ class MonitorOperatorBase(bpy.types.Operator):
         import_tracker = ImportTracker()
         import_tracker.install()
         try:
+            start = time.time()
             self._run()
-            print(f"Finished {self._name}")
+            end = time.time()
+            duration = end - start
+            print(f"Finished {self._name} in {duration:.02f}s")
         except Exception as ex:
             # If your editor replaces files by removing the old one before
             # writing out the new file, we can attempt to reload the module
