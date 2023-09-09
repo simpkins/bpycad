@@ -181,10 +181,7 @@ def intersect(
 
 
 def apply_to_wall_transform(
-    left: cad.Point,
-    right: cad.Point,
-    x: float = 0.0,
-    z: float = 0.0,
+    left: cad.Point, right: cad.Point, x: float = 0.0, z: float = 0.0
 ) -> cad.Transform:
     wall_len = math.sqrt(((right.y - left.y) ** 2) + ((right.x - left.x) ** 2))
     angle = math.atan2(right.y - left.y, right.x - left.x)
@@ -431,3 +428,18 @@ def get_script_args() -> List[str]:
         if arg == "--":
             return sys.argv[idx + 1 :]
     return []
+
+
+def duplicate(
+    obj: bpy.types.Object, name: str, linked: bool = False
+) -> bpy.types.Object:
+    if linked:
+        new_data = obj.data
+    else:
+        new_data = obj.data.copy()
+    # pyre-fixme[16]: blender type stubs are incomplete
+    new_obj = bpy.data.objects.new(name, new_data)
+    # pyre-fixme[16]: blender type stubs are incomplete
+    bpy.context.collection.objects.link(new_obj)
+
+    return new_obj
