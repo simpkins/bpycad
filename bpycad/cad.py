@@ -452,7 +452,13 @@ class Line2D:
         otherv = other.vector()
         num = selfv.x * otherv.x + selfv.y * otherv.y
         denom = self.length() * other.length()
-        return math.acos(num / denom)
+        try:
+            return math.acos(num / denom)
+        except ValueError:
+            # Floating point error can result in denom sometimes being very
+            # slightly larger than num, resulting in an domain error when the
+            # result should actually be 0.0.
+            return 0.0
 
     def angle_full(self, other: Line2D) -> float:
         """Compute the angle between this line and another line.
