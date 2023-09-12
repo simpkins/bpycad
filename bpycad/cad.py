@@ -201,6 +201,10 @@ class Point:
         """Return the dot product"""
         return (self.x * p.x) + (self.y * p.y) + (self.z * p.z)
 
+    def xy(self) -> Point2D:
+        """A Point2D containing just the X and Y coordinates from this point"""
+        return Point2D(self.x, self.y)
+
 
 class Point2D:
     __slots__ = ["x", "y"]
