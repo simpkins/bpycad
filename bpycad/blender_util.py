@@ -341,6 +341,68 @@ def cone(
     return new_mesh_obj(name, mesh)
 
 
+def text(
+    text: str,
+    size: float = 10.0,
+    h: float = 1.0,
+    align_x: str = "LEFT",
+    align_y: str = "TOP_BASELINE",
+    font_path: Optional[str] = None,
+    name: str = "text",
+) -> bpy.types.Object:
+    font_curve = text_curve(
+        text,
+        size=size,
+        h=h,
+        align_x=align_x,
+        align_y=align_y,
+        font_path=font_path,
+        name=name,
+    )
+    return text_curve_to_mesh_object(font_curve, name=name)
+
+
+def text_curve(
+    text: str,
+    size: float = 10.0,
+    h: float = 1.0,
+    align_x: str = "LEFT",
+    align_y: str = "TOP_BASELINE",
+    font_path: Optional[str] = None,
+    name: str = "text",
+) -> bpy.types.TextCurve:
+    font_curve = bpy.data.curves.new(type="FONT", name=f"{name}_curve")
+    font_curve.body = text
+    font_curve.size = size
+    font_curve.extrude = h * 0.5
+    font_curve.align_x = align_x
+    font_curve.align_y = align_y
+
+    if font_path is not None:
+        font = bpy.data.fonts.load(font_path)
+        font_curve.font = font
+
+    return font_curve
+
+
+def text_curve_to_mesh_object(
+    font_curve: bpy.types.TextCurve, name: str = "text"
+) -> bpy.types.Object:
+    curve_obj = bpy.data.objects.new(
+        name=f"{name}_curve_obj", object_data=font_curve
+    )
+
+    mesh = bpy.data.meshes.new_from_object(curve_obj)
+    mesh_obj = bpy.data.objects.new(name, mesh)
+    collection = bpy.data.collections[0]
+    collection.objects.link(mesh_obj)
+
+    bpy.ops.object.select_all(action="DESELECT")
+    mesh_obj.select_set(True)
+    bpy.context.view_layer.objects.active = mesh_obj
+    return mesh_obj
+
+
 class Beveler:
     """
     A helper class for applying bevels to the edges of a Mesh.
