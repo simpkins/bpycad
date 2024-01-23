@@ -120,7 +120,7 @@ class ImportTracker(MetaPathFinder):
 
 
 class MonitorOperatorBase(bpy.types.Operator):
-    """Monitor an external script for changes and re-run on change."""
+    """Monitor an external script for changes and re-run on change"""
 
     # pyre-fixme[31]: bpy property types aren't really types
     poll_interval: bpy.props.FloatProperty(name="poll_interval", default=0.1)
@@ -325,7 +325,7 @@ class MonitorOperatorBase(bpy.types.Operator):
 
 
 class CancelMonitorOperator(bpy.types.Operator):
-    """Monitor an external script for changes and re-run on change."""
+    """Cancel an existing ScriptMonitor operator"""
 
     bl_idname = "script.cancel_external_script_monitor"
     bl_label = "Cancel External Script Monitor"
@@ -430,7 +430,8 @@ def register() -> None:
     bpy.types.TOPBAR_MT_edit.append(menu_func)
 
 
-# Register and add to the "view" menu (required to also use F3 search "Modal Timer Operator" for quick access)
+# Register and add to the "view" menu (required to also use F3 search
+# "Modal Timer Operator" for quick access)
 def unregister() -> None:
     bpy.utils.unregister_class(ScriptMonitorOperator)
     bpy.utils.unregister_class(FunctionMonitorOperator)
