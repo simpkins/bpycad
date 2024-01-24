@@ -348,35 +348,50 @@ def text(
     align_x: str = "LEFT",
     align_y: str = "TOP_BASELINE",
     font_path: Optional[str] = None,
+    resolution: int = 12,
     name: str = "text",
 ) -> bpy.types.Object:
+
+    # Blender's curve-to-mesh logic unfortunately generates a lot of
+    # non-manifold geometry.  Therefore we have to be pretty careful about how
+    # we use it in order to produce a sane mesh.
+    # https://projects.blender.org/blender/blender/issues/117468
+    #
+    # - We avoid using the TextCurve.extrude parameter, and instead just use
+    #   TextCurve to generate a flat 2D mesh which we extrude separately.
+    #   TextCurve.extrude unfortunately produces a mesh where the side walls
+    #   are not connected to the top and bottom.
+    # - Even when generating just a flat mesh, TextCurve to mesh conversion
+    #   will still produce non-manifold edges where two adjacent faces do not
+    #   share the same edge.  We have to call beautify_fill() before extruding.
+
     font_curve = text_curve(
         text,
         size=size,
-        h=h,
         align_x=align_x,
         align_y=align_y,
         font_path=font_path,
+        resolution=resolution,
         name=name,
     )
-    return text_curve_to_mesh_object(font_curve, name=name)
+    return text_curve_to_mesh_object(font_curve, extrude=h, name=name)
 
 
 def text_curve(
     text: str,
     size: float = 10.0,
-    h: float = 1.0,
     align_x: str = "LEFT",
     align_y: str = "TOP_BASELINE",
     font_path: Optional[str] = None,
+    resolution: int = 12,
     name: str = "text",
 ) -> bpy.types.TextCurve:
     font_curve = bpy.data.curves.new(type="FONT", name=f"{name}_curve")
     font_curve.body = text
     font_curve.size = size
-    font_curve.extrude = h * 0.5
     font_curve.align_x = align_x
     font_curve.align_y = align_y
+    font_curve.resolution_u = resolution
 
     if font_path is not None:
         font = bpy.data.fonts.load(font_path)
@@ -386,7 +401,7 @@ def text_curve(
 
 
 def text_curve_to_mesh_object(
-    font_curve: bpy.types.TextCurve, name: str = "text"
+    font_curve: bpy.types.TextCurve, extrude: float = 0.0, name: str = "text"
 ) -> bpy.types.Object:
     curve_obj = bpy.data.objects.new(
         name=f"{name}_curve_obj", object_data=font_curve
@@ -400,6 +415,24 @@ def text_curve_to_mesh_object(
     bpy.ops.object.select_all(action="DESELECT")
     mesh_obj.select_set(True)
     bpy.context.view_layer.objects.active = mesh_obj
+
+    # Converting a TextCurve to a mesh unfortunately produces non-manifold
+    # geometry.  Run beautify_fill() to attempt to clean up non-manifold faces.
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+
+    bpy.ops.mesh.beautify_fill()
+
+    # If extrude was requested, apply the extrusion now.
+    # Don't use the TextCurve.extrude property, since this produces
+    # non-manifold geometry.
+    if extrude:
+        bpy.ops.mesh.extrude_region()
+        bpy.ops.transform.translate(value=(0, 0, extrude))
+
+    bpy.ops.mesh.select_all(action="DESELECT")
+    bpy.ops.object.mode_set(mode="OBJECT")
+
     return mesh_obj
 
 
