@@ -411,6 +411,7 @@ def text_curve_to_mesh_object(
     mesh_obj = bpy.data.objects.new(name, mesh)
     collection = bpy.data.collections[0]
     collection.objects.link(mesh_obj)
+    bpy.data.objects.remove(curve_obj, do_unlink=True)
 
     bpy.ops.object.select_all(action="DESELECT")
     mesh_obj.select_set(True)
