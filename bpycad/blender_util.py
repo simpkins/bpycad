@@ -303,7 +303,12 @@ def set_shading_mode(mode: str) -> None:
                 space.shading.type = mode
 
 
-def cube(x: float, y: float, z: float, name: str = "cube") -> bpy.types.Object:
+def cube(
+    x: float | Tuple[float, float],
+    y: float | Tuple[float, float],
+    z: float | Tuple[float, float],
+    name: str = "cube",
+) -> bpy.types.Object:
     mesh = cad.cube(x, y, z)
     return new_mesh_obj(name, mesh)
 

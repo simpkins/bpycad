@@ -544,8 +544,7 @@ class Mesh:
         return index
 
     def add_face(self, points: Iterable[MeshPoint]) -> int:
-        """Add a face with an arbitrary number of vertices.
-        """
+        """Add a face with an arbitrary number of vertices."""
         index = len(self.faces)
         self.faces.append([p.index for p in points])
         return index
@@ -597,21 +596,40 @@ def compute_angle(v0: Point, v1: Point) -> float:
     return math.acos(num / denom)
 
 
-def cube(x: float, y: float, z: float) -> Mesh:
-    hx = x * 0.5
-    hy = y * 0.5
-    hz = z * 0.5
+def cube(
+    x: float | Tuple[float, float],
+    y: float | Tuple[float, float],
+    z: float | Tuple[float, float],
+) -> Mesh:
+    if isinstance(x, (int, float)):
+        x0 = x * -0.5
+        x1 = x * 0.5
+    else:
+        x0 = x[0]
+        x1 = x[1]
+    if isinstance(y, (int, float)):
+        y0 = y * -0.5
+        y1 = y * 0.5
+    else:
+        y0 = y[0]
+        y1 = y[1]
+    if isinstance(z, (int, float)):
+        z0 = z * -0.5
+        z1 = z * 0.5
+    else:
+        z0 = z[0]
+        z1 = z[1]
 
     mesh = Mesh()
-    b_tl = mesh.add_xyz(-hx, hy, -hz)
-    b_tr = mesh.add_xyz(hx, hy, -hz)
-    b_br = mesh.add_xyz(hx, -hy, -hz)
-    b_bl = mesh.add_xyz(-hx, -hy, -hz)
+    b_tl = mesh.add_xyz(x0, y1, z0)
+    b_tr = mesh.add_xyz(x1, y1, z0)
+    b_br = mesh.add_xyz(x1, y0, z0)
+    b_bl = mesh.add_xyz(x0, y0, z0)
 
-    t_tl = mesh.add_xyz(-hx, hy, hz)
-    t_tr = mesh.add_xyz(hx, hy, hz)
-    t_br = mesh.add_xyz(hx, -hy, hz)
-    t_bl = mesh.add_xyz(-hx, -hy, hz)
+    t_tl = mesh.add_xyz(x0, y1, z1)
+    t_tr = mesh.add_xyz(x1, y1, z1)
+    t_br = mesh.add_xyz(x1, y0, z1)
+    t_bl = mesh.add_xyz(x0, y0, z1)
 
     mesh.add_quad(b_tl, b_bl, b_br, b_tr)
     mesh.add_quad(t_tl, t_tr, t_br, t_bl)
