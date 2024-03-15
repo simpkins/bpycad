@@ -319,7 +319,18 @@ def range_cube(
     z_range: Tuple[float, float],
     name: str = "cube",
 ) -> bpy.types.Object:
-    mesh = cad.range_cube(x_range, y_range, z_range)
+    """Deprecated.  Use cube() instead."""
+    return cube(x_range, y_range, z_range, name)
+
+
+def wedge(
+    p0: cad.Point2D | Tuple[float, float],
+    p1: cad.Point2D | Tuple[float, float],
+    p2: cad.Point2D | Tuple[float, float],
+    length: float,
+    name: str = "wedge",
+) -> bpy.types.Object:
+    mesh = cad.wedge(p0, p1, p2, length)
     return new_mesh_obj(name, mesh)
 
 

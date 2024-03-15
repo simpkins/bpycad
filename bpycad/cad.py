@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from enum import IntEnum
 import math
 from typing import Iterable, List, Optional, Sequence, Tuple, Union
 
@@ -646,24 +647,51 @@ def range_cube(
     y_range: Tuple[float, float],
     z_range: Tuple[float, float],
 ) -> Mesh:
+    """Deprecated.  Use cube() instead."""
+    return cube(x_range, y_range, z_range)
+
+
+def wedge(
+    p0: Point2D | Tuple[float, float],
+    p1: Point2D | Tuple[float, float],
+    p2: Point2D | Tuple[float, float],
+    length: float | Tuple[float, float],
+) -> Mesh:
+    if isinstance(length, (int, float)):
+        x0 = length * -0.5
+        x1 = length * 0.5
+    else:
+        x0 = length[0]
+        x1 = length[1]
+
+    if not isinstance(p0, Point2D):
+        p0 = Point2D(p0[0], p0[1])
+    if not isinstance(p1, Point2D):
+        p1 = Point2D(p1[0], p1[1])
+    if not isinstance(p2, Point2D):
+        p2 = Point2D(p2[0], p2[1])
+
+    w = compute_winding((p0, p1, p2))
+    if w == Winding.Clockwise:
+        # Swap the points so we always get faces with the normals
+        # pointing outwards
+        (p2, p1) = (p1, p2)
+
     mesh = Mesh()
-    b_tl = mesh.add_xyz(x_range[0], y_range[1], z_range[0])
-    b_tr = mesh.add_xyz(x_range[1], y_range[1], z_range[0])
-    b_br = mesh.add_xyz(x_range[1], y_range[0], z_range[0])
-    b_bl = mesh.add_xyz(x_range[0], y_range[0], z_range[0])
+    l0 = mesh.add_xyz(x0, p0.x, p0.y)
+    l1 = mesh.add_xyz(x0, p1.x, p1.y)
+    l2 = mesh.add_xyz(x0, p2.x, p2.y)
 
-    t_tl = mesh.add_xyz(x_range[0], y_range[1], z_range[1])
-    t_tr = mesh.add_xyz(x_range[1], y_range[1], z_range[1])
-    t_br = mesh.add_xyz(x_range[1], y_range[0], z_range[1])
-    t_bl = mesh.add_xyz(x_range[0], y_range[0], z_range[1])
+    r0 = mesh.add_xyz(x1, p0.x, p0.y)
+    r1 = mesh.add_xyz(x1, p1.x, p1.y)
+    r2 = mesh.add_xyz(x1, p2.x, p2.y)
 
-    mesh.add_quad(b_tl, b_bl, b_br, b_tr)
-    mesh.add_quad(t_tl, t_tr, t_br, t_bl)
-    mesh.add_quad(t_br, t_tr, b_tr, b_br)
-    mesh.add_quad(t_bl, t_br, b_br, b_bl)
-    mesh.add_quad(t_tl, t_bl, b_bl, b_tl)
-    mesh.add_quad(t_tr, t_tl, b_tl, b_tr)
+    mesh.add_quad(l0, l1, r1, r0)
+    mesh.add_quad(l1, l2, r2, r1)
+    mesh.add_quad(l2, l0, r0, r2)
 
+    mesh.add_tri(l0, l2, l1)
+    mesh.add_tri(r0, r1, r2)
     return mesh
 
 
@@ -797,3 +825,41 @@ def bezier(
         results.append(b)
 
     return results
+
+
+
+class Winding(IntEnum):
+    Clockwise: int = 0
+    CounterClockwise: int = 1
+    Degenerate: int = 2
+
+    def __str__(self) -> str:
+        if self == Winding.Clockwise:
+            return "Clockwise"
+        elif self == Winding.CounterClockwise:
+            return "CounterClockwise"
+        elif self == Winding.Degenerate:
+            return "Degenerate"
+        return "Unknown"
+
+
+def compute_winding(loop: Sequence[Point2D]) -> Winding:
+    """Given a loop in a 2D plane, computes whether the loop winds
+    clockwise or counter-clockwise.
+    """
+    if len(loop) < 3:
+        return Winding.Degenerate
+
+    value_sum = 0
+    prev_point = loop[-1]
+    for point in loop:
+        value_sum += (point.x - prev_point.x) * (point.y + prev_point.y)
+        prev_point = point
+
+    if value_sum == 0:
+        # This happens if the points all lie on a single line
+        return Winding.Degenerate
+
+    if value_sum < 0:
+        return Winding.Clockwise
+    return Winding.CounterClockwise
