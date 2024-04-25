@@ -68,7 +68,7 @@ def main(
     ap.add_argument(
         "targets",
         metavar="TARGET",
-        nargs="+" if default is None else "*",
+        nargs="*",
         help="The targets to export",
     )
     ap.add_argument(
@@ -119,10 +119,10 @@ def main(
         if unknown_names:
             unknown_names_str = ", ".join(unknown_names)
             ap.error(f"unknown target: {unknown_names_str}")
-    elif args.all or default is None:
+    elif args.all:
         # Execute all targets
         target_names = sorted(targets.keys())
-    elif not default:
+    elif default is None:
         ap.error(f"no target specified.  Use --list to see available targets.")
     else:
         target_names = default[:]
