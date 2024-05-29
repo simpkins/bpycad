@@ -501,10 +501,27 @@ class Beveler:
         # pyre-fixme[6]: blender type stubs don't make it clear that mesh.edges
         #   always behaves as a sequence of MeshEdges
         edge_weights = self.get_bevel_weights(mesh.edges)
+
+        edge_weights_attr = mesh.attributes.get("bevel_weight_edge")
+        if edge_weights_attr is None:
+            edge_weights_attr = mesh.attributes.new(
+                "bevel_weight_edge", "FLOAT", "EDGE"
+            )
+
         for edge_idx, weight in edge_weights.items():
+            edge_weights_attr.data[edge_idx].value = weight
+
             # pyre-fixme[16]: incomplete bpy type annotations
             e = mesh.edges[edge_idx]
-            e.bevel_weight = weight
+
+            # Blender 4.x+ uses the "bevel_weight_edge" mesh attribute for
+            # edge weights.  Older versions of blender had this as a property
+            # on the MeshEdge object.
+            # (https://projects.blender.org/blender/blender/issues/95966)
+            # If the edge has the old property, we are on an older version of
+            # blender, so set it.
+            if hasattr(e, "bevel_weight"):
+                e.bevel_weight = weight
 
         # Create the bevel modifier
         # pyre-fixme[16]: incomplete bpy type annotations
