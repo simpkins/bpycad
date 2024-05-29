@@ -3,5 +3,8 @@
   "source_directories": [
     "."
   ],
+  "search_path": [
+    "stubs"
+  ],
   "strict": true
 }

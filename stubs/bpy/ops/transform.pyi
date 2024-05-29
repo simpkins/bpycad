@@ -1,0 +1,33 @@
+import typing as _typing
+
+def translate(
+    value: _typing.Tuple[float, float, float] = (0.0, 0.0, 0.0),
+    orient_axis_ortho: str = "X",
+    orient_type: str = "GLOBAL",
+    orient_matrix: _typing.Tuple[
+        _typing.Tuple[float, float, float],
+        _typing.Tuple[float, float, float],
+        _typing.Tuple[float, float, float],
+    ] = ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)),
+    orient_matrix_type: str = "GLOBAL",
+    constraint_axis: _typing.Tuple[bool, bool, bool] = (False, False, False),
+    mirror: bool = False,
+    use_proportional_edit: bool = False,
+    proportional_edit_falloff: str = "SMOOTH",
+    proportional_size: float = 1.0,
+    use_proportional_connected: bool = False,
+    use_proportional_projected: bool = False,
+    snap: bool = False,
+    snap_target: str = "CLOSEST",
+    snap_point: _typing.Tuple[float, float, float] = (0.0, 0.0, 0.0),
+    snap_align: bool = False,
+    snap_normal: _typing.Tuple[float, float, float] = (0.0, 0.0, 0.0),
+    gpencil_strokes: bool = False,
+    cursor_transform: bool = False,
+    texture_space: bool = False,
+    remove_on_cancel: bool = False,
+    view2d_edge_pan: bool = False,
+    release_confirm: bool = False,
+    use_accurate: bool = False,
+    use_automerge_and_split: bool = False,
+) -> None: ...

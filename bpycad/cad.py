@@ -24,8 +24,6 @@ class Transform:
 
     def __str__(self) -> str:
         row_strs = []
-        # pyre-fixme[16]: type stubs for mathutils.Matrix do not include
-        #   __iter__
         for row in self._data:
             row_contents = ", ".join(str(elem) for elem in row)
             row_strs.append(f"[{row_contents}]")
@@ -36,22 +34,16 @@ class Transform:
         return Point(self._data[0][3], self._data[1][3], self._data[2][3])
 
     def apply(self, point: Point) -> Point:
-        x = self._data @ mathutils.Matrix((point.x, point.y, point.z, 1))
-        # pyre-fixme[6]: pyre doesn't know the multiply result is always a 3x1
-        #   vector of floats
+        x = self._data @ mathutils.Vector((point.x, point.y, point.z, 1.0))
         return Point(x[0], x[1], x[2])
 
     def transform(self, tf: Transform) -> Transform:
-        # pyre-fixme[6]: pyre doesn't know that the multiply result will always
-        #   be another matrix
         return Transform(tf._data @ self._data)
 
     def translate(self, x: float, y: float, z: float) -> Transform:
         tl = mathutils.Matrix(
             ((1, 0, 0, x), (0, 1, 0, y), (0, 0, 1, z), (0, 0, 0, 1))
         )
-        # pyre-fixme[6]: pyre doesn't know that the multiply result will always
-        #   be another matrix
         return Transform(tl @ self._data)
 
     def rotate(self, x: float, y: float, z: float) -> Transform:
@@ -91,32 +83,24 @@ class Transform:
                 (0, 0, 0, 1),
             )
         )
-        # pyre-fixme[6]: pyre doesn't know that the multiply result will always
-        #   be another matrix
         return Transform(rot @ self._data)
 
     def mirror_x(self) -> Transform:
         mirror = mathutils.Matrix(
             ((-1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1))
         )
-        # pyre-fixme[6]: pyre doesn't know that the multiply result will always
-        #   be another matrix
         return Transform(mirror @ self._data)
 
     def mirror_y(self) -> Transform:
         mirror = mathutils.Matrix(
             ((0, 0, 0, 0), (0, -1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1))
         )
-        # pyre-fixme[6]: pyre doesn't know that the multiply result will always
-        #   be another matrix
         return Transform(mirror @ self._data)
 
     def mirror_z(self) -> Transform:
         mirror = mathutils.Matrix(
             ((0, 0, 0, 0), (0, 1, 0, 0), (0, 0, -1, 0), (0, 0, 0, 1))
         )
-        # pyre-fixme[6]: pyre doesn't know that the multiply result will always
-        #   be another matrix
         return Transform(mirror @ self._data)
 
 

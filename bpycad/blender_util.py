@@ -3,16 +3,12 @@
 # Copyright (c) 2022, Adam Simpkins
 #
 
-# Note: most of the pyre-fixme comments in this file are due to the fact
-# that the type annotations provided by the blender-stubs package do not
-# accurately reflect the actual behavior of the blender C API.
-
 from __future__ import annotations
 
 import math
 import random
 import sys
-from typing import Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import cast, Dict, List, Optional, Sequence, Tuple, Type, Union
 from types import TracebackType
 
 import bpy
@@ -31,11 +27,10 @@ def delete_all() -> None:
 
 def set_view_distance(distance: float) -> None:
     """Update the camera distance in all viewport panels"""
-    # pyre-fixme[16]
     layout = bpy.data.screens["Layout"]
     view_areas = [a for a in layout.areas if a.type == "VIEW_3D"]
     for a in view_areas:
-        region = a.spaces.active.region_3d
+        region = cast(bpy.types.SpaceView3D, a.spaces.active).region_3d
         region.view_distance = distance
 
 
@@ -43,7 +38,6 @@ def blender_mesh(name: str, mesh: cad.Mesh) -> bpy.types.Mesh:
     points = [(p.x, p.y, p.z) for p in mesh.points]
     faces = [tuple(reversed(f)) for f in mesh.faces]
 
-    # pyre-fixme[16]
     blender_mesh: bpy.types.Mesh = bpy.data.meshes.new(name)
     blender_mesh.from_pydata(points, edges=[], faces=faces)
     blender_mesh.update()
@@ -56,15 +50,12 @@ def new_mesh_obj(
     if isinstance(mesh, cad.Mesh):
         mesh = blender_mesh(f"{name}_mesh", mesh)
 
-    # pyre-fixme[16]
     obj: bpy.types.Object = bpy.data.objects.new(name, mesh)
-    # pyre-fixme[16]
     collection = bpy.data.collections[0]
     collection.objects.link(obj)
 
     # Select the newly created object
     obj.select_set(True)
-    # pyre-fixme[16]
     bpy.context.view_layer.objects.active = obj
 
     return obj
@@ -73,7 +64,6 @@ def new_mesh_obj(
 def dissolve_limited(obj: bpy.types.Object, angle: float) -> None:
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
-    # pyre-fixme[16]: blender type stubs are inaccurate here
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.mode_set(mode="EDIT")
     bpy.ops.mesh.select_all(action="SELECT")
@@ -104,13 +94,14 @@ def boolean_op(
     """
     bpy.ops.object.select_all(action="DESELECT")
     obj1.select_set(True)
-    # pyre-fixme[16]
     bpy.context.view_layer.objects.active = obj1
 
     randn = random.randint(0, 1000000)
     mod_name = f"bool_op_{randn}"
-    # pyre-fixme[16]
-    mod = obj1.modifiers.new(name=mod_name, type="BOOLEAN")
+    mod = cast(
+        bpy.types.BooleanModifier,
+        obj1.modifiers.new(name=mod_name, type="BOOLEAN"),
+    )
     mod.object = obj2
     mod.operation = op
     mod.double_threshold = 1e-12
@@ -226,8 +217,8 @@ def apply_to_wall(
 class TransformContext:
     def __init__(self, obj: bpy.types.Object) -> None:
         self.obj = obj
-        # pyre-fixme[20]: blender type stubs are inaccurate
         self.bmesh: bmesh.types.BMesh = bmesh.new()
+        # pyre-fixme[6]: obj.data must be a Mesh
         self.bmesh.from_mesh(obj.data)
 
     def __enter__(self) -> TransformContext:
@@ -240,6 +231,7 @@ class TransformContext:
         traceback: Optional[TracebackType],
     ) -> None:
         if exc_value is None:
+            # pyre-fixme[6]: obj.data must be a Mesh
             self.bmesh.to_mesh(self.obj.data)
         self.bmesh.free()
 
@@ -252,7 +244,6 @@ class TransformContext:
         if center is None:
             center = (0.0, 0.0, 0.0)
 
-        # pyre-fixme[20]
         bmesh.ops.rotate(
             self.bmesh,
             verts=self.bmesh.verts,
@@ -261,42 +252,33 @@ class TransformContext:
         )
 
     def translate(self, x: float, y: float, z: float) -> None:
-        # pyre-fixme[20]
         bmesh.ops.translate(self.bmesh, verts=self.bmesh.verts, vec=(x, y, z))
 
     def scale(self, x: float, y: float, z: float) -> None:
-        # pyre-fixme[20]
         bmesh.ops.scale(self.bmesh, verts=self.bmesh.verts, vec=(x, y, z))
 
     def transform(self, tf: cad.Transform) -> None:
         matrix = mathutils.Matrix(tf._data)
-        # pyre-fixme[20]
         bmesh.ops.transform(self.bmesh, verts=self.bmesh.verts, matrix=matrix)
 
     def triangulate(self) -> None:
-        # pyre-fixme[16, 20]: blender type stubs are inaccurate
         bmesh.ops.triangulate(self.bmesh, faces=self.bmesh.faces[:])
 
     def mirror_x(self) -> None:
-        # pyre-fixme[16]: blender type stubs are inaccurate
         geom = self.bmesh.faces[:] + self.bmesh.verts[:] + self.bmesh.edges[:]
         # Mirror creates new mirrored geometry
         # Set merge_dist to a negative value to prevent any of the new mirrored
         # geometry from being merged with the original vertices.
-        # pyre-fixme[20]
         ret = bmesh.ops.mirror(
             self.bmesh, geom=geom, axis="X", merge_dist=-1.0
         )
         # Delete the original geometry
-        # pyre-fixme[20]
         bmesh.ops.delete(self.bmesh, geom=geom)
         # Reverse the faces to restore the correct normal direction
-        # pyre-fixme[20]
         bmesh.ops.reverse_faces(self.bmesh, faces=self.bmesh.faces[:])
 
 
 def set_shading_mode(mode: str) -> None:
-    # pyre-fixme[16]
     for area in bpy.context.workspace.screens[0].areas:
         for space in area.spaces:
             if space.type == "VIEW_3D":
@@ -402,7 +384,10 @@ def text_curve(
     resolution: int = 12,
     name: str = "text",
 ) -> bpy.types.TextCurve:
-    font_curve = bpy.data.curves.new(type="FONT", name=f"{name}_curve")
+    font_curve = cast(
+        bpy.types.TextCurve,
+        bpy.data.curves.new(type="FONT", name=f"{name}_curve"),
+    )
     font_curve.body = text
     font_curve.size = size
     font_curve.align_x = align_x
@@ -498,8 +483,6 @@ class Beveler:
         assert isinstance(
             mesh, bpy.types.Mesh
         ), "bevels can only be applied to mesh objects"
-        # pyre-fixme[6]: blender type stubs don't make it clear that mesh.edges
-        #   always behaves as a sequence of MeshEdges
         edge_weights = self.get_bevel_weights(mesh.edges)
 
         edge_weights_attr = mesh.attributes.get("bevel_weight_edge")
@@ -511,7 +494,6 @@ class Beveler:
         for edge_idx, weight in edge_weights.items():
             edge_weights_attr.data[edge_idx].value = weight
 
-            # pyre-fixme[16]: incomplete bpy type annotations
             e = mesh.edges[edge_idx]
 
             # Blender 4.x+ uses the "bevel_weight_edge" mesh attribute for
@@ -521,11 +503,15 @@ class Beveler:
             # If the edge has the old property, we are on an older version of
             # blender, so set it.
             if hasattr(e, "bevel_weight"):
+                # pyre-fixme[16]: we have explicitly confirmed the bevel_weight
+                #   attribute exists.
                 e.bevel_weight = weight
 
         # Create the bevel modifier
-        # pyre-fixme[16]: incomplete bpy type annotations
-        bevel = obj.modifiers.new(name="BevelCorners", type="BEVEL")
+        bevel = cast(
+            bpy.types.BevelModifier,
+            obj.modifiers.new(name="BevelCorners", type="BEVEL"),
+        )
         bevel.width = width
         bevel.limit_method = "WEIGHT"
         bevel.segments = segments
@@ -566,9 +552,7 @@ def duplicate(
         new_data = obj.data
     else:
         new_data = obj.data.copy()
-    # pyre-fixme[16]: blender type stubs are incomplete
     new_obj = bpy.data.objects.new(name, new_data)
-    # pyre-fixme[16]: blender type stubs are incomplete
     bpy.context.collection.objects.link(new_obj)
 
     return new_obj

@@ -141,7 +141,6 @@ def main(
             print(f"Wrote {out_path}...")
         else:
             # Export all defined objects
-            # pyre-fixme[16]: the blender type stubs are incomplete
             for obj in bpy.data.objects:
                 out_path = out_dir / f"{obj.name}.stl"
                 export_object(obj, out_path)

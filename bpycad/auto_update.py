@@ -70,9 +70,6 @@ class ImportTracker(MetaPathFinder):
         sys.meta_path = meta_path
         self.real_meta_path = None
 
-    # pyre-fixme[14]: pyre reports an inconsistent override here when using
-    #  slightly out-of-date typeshed hints from before
-    #  https://github.com/python/typeshed/pull/9070
     def find_spec(
         self,
         fullname: str,
@@ -82,7 +79,7 @@ class ImportTracker(MetaPathFinder):
         meta_path = self.real_meta_path
         assert meta_path is not None
         for mpf in meta_path:
-            spec = mpf.find_spec(fullname, path, target=target)
+            spec = mpf.find_spec(fullname, path, target)
             if spec is not None:
                 paths: List[Path] = []
                 if spec.origin is not None:
@@ -426,7 +423,8 @@ def register() -> None:
     bpy.utils.register_class(ScriptMonitorOperator)
     bpy.utils.register_class(FunctionMonitorOperator)
     bpy.utils.register_class(CancelMonitorOperator)
-    # pyre-fixme[16]: incomplete bpy type annotations
+    # pyre-fixme[16]: TOPBAR_MT_edit is dynamically registered by the startup
+    #   script
     bpy.types.TOPBAR_MT_edit.append(menu_func)
 
 
@@ -436,7 +434,8 @@ def unregister() -> None:
     bpy.utils.unregister_class(ScriptMonitorOperator)
     bpy.utils.unregister_class(FunctionMonitorOperator)
     bpy.utils.unregister_class(CancelMonitorOperator)
-    # pyre-fixme[16]: incomplete bpy type annotations
+    # pyre-fixme[16]: TOPBAR_MT_edit is dynamically registered by the startup
+    #   script
     bpy.types.TOPBAR_MT_edit.remove(menu_func)
 
 

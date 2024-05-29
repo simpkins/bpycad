@@ -1,0 +1,3 @@
+from . import types
+
+data: types.BlendData = ...

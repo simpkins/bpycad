@@ -1,0 +1,6 @@
+import bpy
+import typing as _typing
+
+
+def register_class(cls: _typing.Type[bpy.types.bpy_struct]) -> None: ...
+def unregister_class(cls: _typing.Type[bpy.types.bpy_struct]) -> None: ...
