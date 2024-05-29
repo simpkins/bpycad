@@ -86,3 +86,12 @@ def beautify_fill(
     use_restrict_tag: bool = ...,
     method: str = ...,
 ) -> _typing.Dict[str, _typing.Any]: ...
+
+
+def convex_hull(
+    bm: bmesh.types.BMesh,
+    input: _typing.Sequence[
+        bmesh.types.BMVert | bmesh.types.BMEdge | bmesh.types.BMFace
+    ] = ...,
+    use_existing_faces: bool = ...,
+) -> _typing.Dict[str, _typing.Any]: ...

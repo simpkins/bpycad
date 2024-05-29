@@ -1,5 +1,8 @@
 import bpy
+import mathutils
 import typing as _typing
+
+T = _typing.TypeVar("T")
 
 
 class BMesh:
@@ -19,13 +22,21 @@ class BMesh:
     def free(self) -> None: ...
 
 
-class BMFace: ...
+class BMFace:
+    edges: BMElemSeq[BMEdge]
+    verts: BMElemSeq[BMVert]
+    index: int
 
 
-class BMEdge: ...
+class BMEdge:
+    link_faces: BMElemSeq[BMFace]
+    verts: BMElemSeq[BMVert]
+    index: int
 
 
-class BMVert: ...
+class BMVert:
+    co: mathutils.Vector
+    index: int
 
 
 class BMEdgeSeq(_typing.List[BMEdge]): ...
@@ -35,3 +46,7 @@ class BMFaceSeq(_typing.List[BMFace]): ...
 
 
 class BMVertSeq(_typing.List[BMVert]): ...
+
+
+class BMElemSeq(_typing.Sequence[T]):
+    def index_update(self) -> None: ...

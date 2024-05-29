@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import mathutils
 import typing as _typing
 
 
@@ -26,8 +27,22 @@ class ViewLayer(bpy_struct): ...
 
 
 class Object(ID):
-    data: ID = ...
-    modifiers: ObjectModifiers = ...
+    data: ID
+    modifiers: ObjectModifiers
+
+    @property
+    def location(self) -> mathutils.Vector: ...
+
+    @location.setter
+    def location(self, value: _typing.Sequence[float]) -> None: ...
+
+    @property
+    def rotation_euler(self) -> mathutils.Euler: ...
+
+    @rotation_euler.setter
+    def rotation_euler(
+        self, value: mathutils.Euler | _typing.Sequence[float]
+    ) -> None: ...
 
     def select_set(
         self, state: bool, view_layer: _typing.Optional[ViewLayer] = None

@@ -27,9 +27,20 @@ class Matrix(_typing.Sequence[Vector]):
 
 
 class Vector(_typing.Sequence[float]):
+    x: float
+    y: float
+    z: float
+    w: float
+
     def __init__(self, rows: _typing.Sequence[float]) -> None: ...
     def __len__(self) -> int: ...
     def __getitem__(self, index: int) -> float: ...
 
 
 class Quaternion: ...
+
+
+class Euler:
+    def __init__(
+        self, angles: _typing.Sequence[float], order: str
+    ) -> None: ...
